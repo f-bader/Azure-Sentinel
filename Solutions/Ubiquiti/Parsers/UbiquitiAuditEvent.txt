@@ -2,9 +2,10 @@
 // Paste below query in log analytics, click on Save button and select as Function from drop down by specifying function name and alias as UbiquitiAuditEvent.
 // Function usually takes 10-15 minutes to activate. You can then use function alias from any other queries (e.g. UbiquitiAuditEvent | take 10).
 // Reference : Using functions in Azure monitor log queries : https://docs.microsoft.com/azure/azure-monitor/log-query/functions
+
 let EventData = Ubiquiti_CL
 | extend EventVendor = 'Ubiquiti'
-| extend EventTime = extract(@'\<\d+\>(\w+\s+\w+\s+\d+:\d+:\d+)\s\w+,', 1, Message)
+| extend EventTime = extract(@'\<\d+\>(\w+\s+\w+\s+\d+:\d+:\d+)\s\w+', 1, Message)
 | extend DvcType = iif(extract(@'\d+\:\d+\:\d+\s(\w+),[A-Fa-f0-9]{12}', 1, Message)!="", extract(@'\d+\:\d+\:\d+\s(\w+),[A-Fa-f0-9]{12}', 1, Message), extract(@'\d+\:\d+\:\d+\s[A-Fa-f0-9]{12},([A-Za-z-]+)-', 1, Message))
 | extend DvcMacAddr = replace(@'(:)$', @'', replace(@'(\w{2})', @'\1:', extract(@'([A-Fa-f0-9]{12}),' , 1, Message)))
 | extend FirmwareVersion = iif(extract(@'[A-Fa-f0-9]{12},v(.*?)\:', 1, Message)!="", extract(@'[A-Fa-f0-9]{12},v(.*?)\:', 1, Message), extract(@'[A-Fa-f0-9]{12},[A-Za-z-]+([\d\.\+]+)[\:\s]', 1, Message));
@@ -29,7 +30,7 @@ EventData
 };
 let ubiquiti_firewall_events =() {
 EventData
-| where Message matches regex @'kernel:\s+\[.+\]\s+IN=\w+\s+OUT=\w+\s+'
+| where Message matches regex @'kernel:\s+\[.+\]IN=\w+\s+OUT=\w+\s+'
 | extend EventCategory = 'firewall'
 | extend FlowId = extract(@'ID=(.*?)\s', 1, Message)
 | extend DvcInboundInterface = extract(@'IN=(.*?)\s', 1, Message)
@@ -77,7 +78,6 @@ EventData
 };
 let ubiquiti_EVT_AP_STA_ASSOC_TRACKER_DBG =() {
 EventData
-//| where Message contains 'libubnt'
 | where Message contains 'EVT_AP_STA_ASSOC_TRACKER_DBG'
 | extend EventCategory = 'libubnt'
 | extend WlanId = extract(@'vap:\s(.*?)', 1, Message)
@@ -87,7 +87,6 @@ EventData
 };
 let ubiquiti_EVENT_STA_ =() {
 EventData
-//| where Message contains 'libubnt'
 | where Message contains 'EVENT_STA_'
 | extend EventCategory = 'libubnt'
 | extend WlanId = extract(@'EVENT_STA_(JOIN|LEAVE|IP)\s(\w+):', 2, Message)
