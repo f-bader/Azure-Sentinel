@@ -2,7 +2,6 @@
 // Paste below query in log analytics, click on Save button and select as Function from drop down by specifying function name and alias as UbiquitiAuditEvent.
 // Function usually takes 10-15 minutes to activate. You can then use function alias from any other queries (e.g. UbiquitiAuditEvent | take 10).
 // Reference : Using functions in Azure monitor log queries : https://docs.microsoft.com/azure/azure-monitor/log-query/functions
-
 let EventData = Ubiquiti_CL
 | extend EventVendor = 'Ubiquiti'
 | extend EventTime = extract(@'\<\d+\>(\w+\s+\w+\s+\d+:\d+:\d+)\s\w+', 1, Message)
@@ -78,6 +77,7 @@ EventData
 };
 let ubiquiti_EVT_AP_STA_ASSOC_TRACKER_DBG =() {
 EventData
+//| where Message contains 'libubnt'
 | where Message contains 'EVT_AP_STA_ASSOC_TRACKER_DBG'
 | extend EventCategory = 'libubnt'
 | extend WlanId = extract(@'vap:\s(.*?)', 1, Message)
@@ -87,6 +87,7 @@ EventData
 };
 let ubiquiti_EVENT_STA_ =() {
 EventData
+//| where Message contains 'libubnt'
 | where Message contains 'EVENT_STA_'
 | extend EventCategory = 'libubnt'
 | extend WlanId = extract(@'EVENT_STA_(JOIN|LEAVE|IP)\s(\w+):', 2, Message)
